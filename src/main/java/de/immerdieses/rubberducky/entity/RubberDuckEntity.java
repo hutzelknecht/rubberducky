@@ -3,6 +3,8 @@ package de.immerdieses.rubberducky.entity;
 import de.immerdieses.rubberducky.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -47,6 +49,18 @@ public class RubberDuckEntity extends Animal {
     // -------------------------------------------------------------------------
     // Riding / flying
     // -------------------------------------------------------------------------
+
+    /** Right-click to mount; shift-right-click passes through to super (no action). */
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (!isVehicle() && !player.isShiftKeyDown()) {
+            if (!level().isClientSide()) {
+                player.startRiding(this);
+            }
+            return level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+        }
+        return super.mobInteract(player, hand);
+    }
 
     @Override
     public LivingEntity getControllingPassenger() {

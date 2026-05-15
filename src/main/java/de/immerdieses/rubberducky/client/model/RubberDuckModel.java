@@ -54,10 +54,10 @@ public class RubberDuckModel extends EntityModel<RubberDuckRenderState> {
                 CubeListBuilder.create().texOffs(24, 0).addBox(-2f, -4f, -2f, 4, 4, 4),
                 PartPose.offset(0f, 20f, -2f));
 
-        // Beak: [6.4,4,1.4]→[9.6,5,3] → narrower slab pointing forward
+        // Beak: centred on front face of head, vertically mid-head (~y=17-18)
         parts.addOrReplaceChild("beak",
-                CubeListBuilder.create().texOffs(36, 0).addBox(-1.6f, -1f, -2f, 3, 1, 2),
-                PartPose.offset(0f, 21f, -4f));
+                CubeListBuilder.create().texOffs(36, 0).addBox(-1.5f, -1f, -2f, 3, 1, 2),
+                PartPose.offset(0f, 18f, -4f));
 
         // Left wing: thin slab on left side
         parts.addOrReplaceChild("left_wing",
@@ -85,7 +85,7 @@ public class RubberDuckModel extends EntityModel<RubberDuckRenderState> {
         float bob = Mth.sin(state.ageInTicks * 0.15f) * 0.04f;
         body.y = 24f + bob;
         head.y = 20f + bob;
-        beak.y = 21f + bob;
+        beak.y = 18f + bob;
         tail.y = 21f + bob;
 
         // Head turns with body yaw delta

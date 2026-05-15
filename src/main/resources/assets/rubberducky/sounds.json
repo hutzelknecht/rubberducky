@@ -1,0 +1,12 @@
+{
+  "rubber_duck.squeak": {
+    "subtitle": "subtitles.entity.rubber_duck.squeak",
+    "sounds": [
+      {
+        "name": "rubberducky:rubber_duck/squeak",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  }
+}

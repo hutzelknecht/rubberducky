@@ -1,13 +1,6 @@
 {
-  "itemGroup.rubberducky": "Example Mod Tab",
-  "block.rubberducky.example_block": "Example Block",
-  "item.rubberducky.example_item": "Example Item",
-
-  "rubberducky.configuration.title": "Rubber Ducky Configs",
-  "rubberducky.configuration.section.rubberducky.common.toml": "Rubber Ducky Configs",
-  "rubberducky.configuration.section.rubberducky.common.toml.title": "Rubber Ducky Configs",
-  "rubberducky.configuration.items": "Item List",
-  "rubberducky.configuration.logDirtBlock": "Log Dirt Block",
-  "rubberducky.configuration.magicNumberIntroduction": "Magic Number Text",
-  "rubberducky.configuration.magicNumber": "Magic Number"
+  "itemGroup.rubberducky": "Rubber Ducky",
+  "entity.rubberducky.rubber_duck": "Rubber Duck",
+  "item.rubberducky.rubber_duck_spawn_egg": "Rubber Duck Spawn Egg",
+  "subtitles.entity.rubber_duck.squeak": "Rubber Duck squeaks"
 }

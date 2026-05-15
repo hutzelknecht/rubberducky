@@ -13,7 +13,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
@@ -45,6 +47,18 @@ public class RubberDucky {
         CREATIVE_MODE_TABS.register(modEventBus);
 
         modEventBus.addListener(this::registerAttributes);
+
+        // Block mid-air dismount: Shift only descends; dismount happens once duck lands
+        NeoForge.EVENT_BUS.addListener(this::onEntityMount);
+    }
+
+    /** Prevent the player from dismounting mid-air. Shift descends; landing allows dismount. */
+    private void onEntityMount(EntityMountEvent event) {
+        if (event.isDismounting()
+                && event.getEntityBeingMounted() instanceof RubberDuckEntity duck
+                && !duck.onGround()) {
+            event.setCanceled(true);
+        }
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

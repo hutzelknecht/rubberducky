@@ -72,38 +72,41 @@ public class RubberDuckEntity extends Animal {
     public void travel(Vec3 travelVector) {
         if (isVehicle() && getControllingPassenger() instanceof Player rider) {
 
-            // Yaw follows rider's look
-            setYRot(rider.getYRot());
-            yRotO = getYRot();
+            // Snap duck rotation to rider's look direction immediately (no interpolation lag)
+            float yaw = rider.getYRot();
+            setYRot(yaw);
+            yRotO      = yaw;
+            yBodyRot   = yaw;
+            yBodyRotO  = yaw;
+            yHeadRot   = yaw;
             setXRot(rider.getXRot() * 0.5f);
-            setRot(getYRot(), getXRot());
-            yBodyRot = getYRot();
-            yHeadRot = getYRot();
 
             float forward = rider.zza;
-            float strafe = rider.xxa;
+            float strafe  = rider.xxa;
+            if (forward < 0f) forward *= 0.5f; // slower in reverse
 
-            // Vertical: jump flag is set on the duck entity by the ride packet; sneak = descend
-            double verticalInput = 0.0;
+            // Correct MC movement: forward direction = (-sinYaw, cosYaw)
+            // Matches LivingEntity.getInputVector() / moveRelative() convention
+            float yawRad = yaw * (float)(Math.PI / 180.0);
+            float sinYaw = (float)Math.sin(yawRad);
+            float cosYaw = (float)Math.cos(yawRad);
+            double dx = (strafe * cosYaw - forward * sinYaw) * FLYING_SPEED;
+            double dz = (forward * cosYaw + strafe * sinYaw) * FLYING_SPEED;
+
+            // Vertical: Space = ascend, Shift = descend
+            // Dismount is blocked mid-air (EntityMountEvent); Shift only dismounts on ground
+            double dy = 0.0;
             if (this.jumping) {
-                verticalInput = FLYING_SPEED * 0.5;
+                dy = FLYING_SPEED * 0.5;
             } else if (rider.isShiftKeyDown()) {
-                verticalInput = -FLYING_SPEED * 0.5;
+                dy = -FLYING_SPEED * 0.5;
             }
 
-            if (forward <= 0f) forward *= 0.5f;
-
-            // Rotate input by yaw
-            double yawRad = Math.toRadians(getYRot());
-            double dx = strafe * FLYING_SPEED * 0.5 * Math.cos(yawRad) + forward * FLYING_SPEED * Math.sin(yawRad);
-            double dz = forward * FLYING_SPEED * Math.cos(yawRad) - strafe * FLYING_SPEED * 0.5 * Math.sin(yawRad);
-
-            setDeltaMovement(dx, verticalInput, dz);
+            setDeltaMovement(dx, dy, dz);
             move(MoverType.SELF, getDeltaMovement());
             setDeltaMovement(getDeltaMovement().scale(0.9));
             return;
         }
-
         super.travel(travelVector);
     }
 

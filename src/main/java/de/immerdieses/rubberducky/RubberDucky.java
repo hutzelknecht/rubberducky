@@ -52,11 +52,11 @@ public class RubberDucky {
         NeoForge.EVENT_BUS.addListener(this::onEntityMount);
     }
 
-    /** Prevent the player from dismounting mid-air. Shift descends; landing allows dismount. */
+    /** Prevent the player from dismounting mid-air. Shift descends; landing/water allows dismount. */
     private void onEntityMount(EntityMountEvent event) {
         if (event.isDismounting()
                 && event.getEntityBeingMounted() instanceof RubberDuckEntity duck
-                && !duck.onGround()) {
+                && !duck.isSafeToDisMount()) {
             event.setCanceled(true);
         }
     }

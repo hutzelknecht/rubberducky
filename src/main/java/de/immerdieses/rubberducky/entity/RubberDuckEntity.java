@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -18,15 +19,18 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 public class RubberDuckEntity extends Animal {
 
     // Twice the speed of a ghast's flying speed attribute (0.5 → 1.0)
     private static final double FLYING_SPEED = 1.0;
     private static final double WATER_FLOAT_FORCE = 0.08;
+
+    /** Last controlling rider; used as a fallback to re-seat them if dismount fires mid-air. */
+    @Nullable private Player lastRider = null;
 
     public RubberDuckEntity(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -94,9 +98,9 @@ public class RubberDuckEntity extends Animal {
             double dz = (forward * cosYaw + strafe * sinYaw) * FLYING_SPEED;
 
             // Vertical: Space = ascend, Shift = descend
-            // Dismount is blocked mid-air (EntityMountEvent); Shift only dismounts on ground
+            // Dismount is blocked mid-air; Shift only dismounts when on ground or water
             double dy = 0.0;
-            if (this.jumping) {
+            if (rider.jumping) {
                 dy = FLYING_SPEED * 0.5;
             } else if (rider.isShiftKeyDown()) {
                 dy = -FLYING_SPEED * 0.5;
@@ -108,6 +112,33 @@ public class RubberDuckEntity extends Animal {
             return;
         }
         super.travel(travelVector);
+    }
+
+    /**
+     * Fallback dismount guard: if EntityMountEvent didn't fire/cancel, re-seat the rider
+     * when the duck is still airborne and not on water.
+     */
+    @Override
+    public void tick() {
+        super.tick();
+        if (!level().isClientSide()) {
+            Entity passenger = getFirstPassenger();
+            if (passenger instanceof Player player) {
+                lastRider = player;
+            } else if (passenger == null && lastRider != null && lastRider.isAlive() && !isSafeToDisMount()) {
+                // Rider escaped mid-air — put them back (force=true bypasses entity-mount event)
+                if (!lastRider.isPassenger()) {
+                    lastRider.startRiding(this, true, true);
+                }
+            } else if (passenger == null) {
+                lastRider = null;
+            }
+        }
+    }
+
+    /** True when the duck is on solid ground or floating on/in water — safe to dismount. */
+    public boolean isSafeToDisMount() {
+        return onGround() || isInWater();
     }
 
     // -------------------------------------------------------------------------

@@ -29,6 +29,8 @@ public class RubberDuckEntity extends Animal {
     private static final double FLYING_SPEED = 1.0;
     private static final double WATER_FLOAT_FORCE = 0.08;
 
+    /** Set by EntityMountEvent when a mid-air dismount is cancelled; consumed in travel(). */
+    public boolean riderWantsDescend = false;
     /** Last controlling rider; used as a fallback to re-seat them if dismount fires mid-air. */
     @Nullable private Player lastRider = null;
 
@@ -98,13 +100,16 @@ public class RubberDuckEntity extends Animal {
             double dz = (forward * cosYaw + strafe * sinYaw) * FLYING_SPEED;
 
             // Vertical: Space = ascend, Shift = descend
-            // Dismount is blocked mid-air; Shift only dismounts when on ground or water
+            // riderWantsDescend is set by the EntityMountEvent handler each tick Shift is held
+            // (in 1.21.x, rider.isShiftKeyDown() is not reliable during riding — the Shift key
+            // triggers the dismount mechanism, not the shiftKeyDown flag on the server)
             double dy = 0.0;
             if (rider.jumping) {
                 dy = FLYING_SPEED * 0.5;
-            } else if (rider.isShiftKeyDown()) {
+            } else if (riderWantsDescend) {
                 dy = -FLYING_SPEED * 0.5;
             }
+            riderWantsDescend = false; // consumed
 
             setDeltaMovement(dx, dy, dz);
             move(MoverType.SELF, getDeltaMovement());

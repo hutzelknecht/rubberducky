@@ -58,6 +58,10 @@ public class RubberDucky {
                 && event.getEntityBeingMounted() instanceof RubberDuckEntity duck
                 && !duck.isSafeToDisMount()) {
             event.setCanceled(true);
+            // Player.aiStep() calls stopRiding() every tick Shift is held, which fires this event.
+            // We repurpose that signal as "rider wants to descend" since isShiftKeyDown()
+            // is not reliably set on the server while riding in 1.21.x.
+            duck.riderWantsDescend = true;
         }
     }
 
